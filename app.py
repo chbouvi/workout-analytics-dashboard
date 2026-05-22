@@ -109,7 +109,22 @@ max_weight = exercise_df.groupby("date")["weight"].max()
 max_weight_df = max_weight.reset_index()
 total_max_weight = int(max_weight_df["weight"].max())
 
-st.write(max_weight_df)
+max_weight_df["workout_num"] = range(len(max_weight_df))
+x_mean = max_weight_df["workout_num"].mean()
+y_mean = max_weight_df["weight"].mean()
+x = max_weight_df["workout_num"]
+y = max_weight_df["weight"]
+if len(x) < 2:
+    predicted_weight = "N/A"
+else:
+    numerator = ((x - x_mean)*(y - y_mean)).sum()
+    denominator = ((x - x_mean) ** 2).sum()
+    m = numerator / denominator
+    b = y_mean - m * x_mean
+    next_workout_num = len(max_weight_df)
+    predicted_weight = m * next_workout_num + b
+    max_weight_df["predicted_weight"] = m * max_weight_df["workout_num"] + b
+
 
 pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
 most_recent_pr = pr_rows_df["date"].max()
@@ -132,6 +147,13 @@ fig1 = px.line(
 fig1.update_layout(
     xaxis_title="Date",
     yaxis_title="Max Weight (lbs)"
+)
+
+fig1.add_scatter(
+    x = max_weight_df["date"],
+    y = max_weight_df["predicted_weight"],
+    mode = "lines",
+    name = "Trendline"
 )
 
 fig2 = px.bar(
@@ -178,10 +200,14 @@ with col4:
     st.metric("Highest Volume", highest_volume)
 
 with col5:
-    st.metric("Max 1RM", total_max_1RM)
+    st.metric("Estimated 1RM", total_max_1RM)
 
 with col6:
     st.metric("Latest Workout", latest_workout)
+
+st.subheader("Prediction")
+
+st.metric("Predicted Next Weight", round(predicted_weight, 1))
 
 st.divider()
 
