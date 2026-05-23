@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st 
 import plotly.express as px 
+from google import genai
 
 # Load workout data
 df = pd.read_csv("workouts.csv")
@@ -114,8 +115,9 @@ x_mean = max_weight_df["workout_num"].mean()
 y_mean = max_weight_df["weight"].mean()
 x = max_weight_df["workout_num"]
 y = max_weight_df["weight"]
-if len(x) < 2:
-    predicted_weight = "N/A"
+m = None
+if len(max_weight_df) < 2:
+    predicted_weight = None
 else:
     numerator = ((x - x_mean)*(y - y_mean)).sum()
     denominator = ((x - x_mean) ** 2).sum()
@@ -124,7 +126,6 @@ else:
     next_workout_num = len(max_weight_df)
     predicted_weight = m * next_workout_num + b
     max_weight_df["predicted_weight"] = m * max_weight_df["workout_num"] + b
-
 
 pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
 most_recent_pr = pr_rows_df["date"].max()
@@ -149,12 +150,13 @@ fig1.update_layout(
     yaxis_title="Max Weight (lbs)"
 )
 
-fig1.add_scatter(
-    x = max_weight_df["date"],
-    y = max_weight_df["predicted_weight"],
-    mode = "lines",
-    name = "Trendline"
-)
+if predicted_weight is not None:
+    fig1.add_scatter(
+        x = max_weight_df["date"],
+        y = max_weight_df["predicted_weight"],
+        mode = "lines",
+        name = "Trendline"
+    )
 
 fig2 = px.bar(
     volume_df,
@@ -207,7 +209,10 @@ with col6:
 
 st.subheader("Prediction")
 
-st.metric("Predicted Next Weight", round(predicted_weight, 1))
+if predicted_weight is None:
+    st.metric("Predicted Next Weight", "N/A")
+else:
+    st.metric("Predicted Next Weight", round(predicted_weight, 1))
 
 st.divider()
 
@@ -216,6 +221,36 @@ st.subheader("Progress Charts")
 st.plotly_chart(fig1, width="stretch")
 st.plotly_chart(fig2, width="stretch")
 st.plotly_chart(fig3, width="stretch")
+
+st.subheader("AI Workout Insights")
+
+api_key = st.secrets["Gemini_Key"]
+client = genai.Client(api_key=api_key)
+
+insight_prompt = f"""
+    Exercise: {exercise}
+    Sessions: {total_sessions}
+    Max Weight: {total_max_weight}
+    Estimated 1RM: {total_max_1RM}
+    Predicted Next Weight: {predicted_weight}
+    Latest Workout: {latest_workout}
+    Highest Volume: {highest_volume}
+    Most Recent PR Date: {most_recent_pr}
+    Regression Slope: {m}
+
+    Give:
+    1. Progress assessment
+    2. Strengths
+    3. Suggestions
+    4. Predicted future progress
+"""
+
+if st.button("Generate AI Insights"):
+    response = client.models.generate_content(
+        model="gemini-3.5-flash",
+        contents=insight_prompt
+    )
+    st.markdown(response.text)
 
 st.divider()
 
