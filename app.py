@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st 
 import plotly.express as px 
 from google import genai
+from forecasting import calculate_weight_forecast
 
 # Load workout data
 df = pd.read_csv("workouts.csv")
@@ -94,6 +95,7 @@ if st.sidebar.button("Add Set"):
 exercise_df = df[df["exercise"] == exercise]
 
 latest_workout = exercise_df["date"].max().strftime("%m/%d/%y")
+latest_date = exercise_df["date"].max()
 
 # Calculate total sessions for this exercise
 sessions_df = exercise_df.groupby("date")["set"].max()
@@ -110,22 +112,7 @@ max_weight = exercise_df.groupby("date")["weight"].max()
 max_weight_df = max_weight.reset_index()
 total_max_weight = int(max_weight_df["weight"].max())
 
-max_weight_df["workout_num"] = range(len(max_weight_df))
-x_mean = max_weight_df["workout_num"].mean()
-y_mean = max_weight_df["weight"].mean()
-x = max_weight_df["workout_num"]
-y = max_weight_df["weight"]
-m = None
-if len(max_weight_df) < 2:
-    predicted_weight = None
-else:
-    numerator = ((x - x_mean)*(y - y_mean)).sum()
-    denominator = ((x - x_mean) ** 2).sum()
-    m = numerator / denominator
-    b = y_mean - m * x_mean
-    next_workout_num = len(max_weight_df)
-    predicted_weight = m * next_workout_num + b
-    max_weight_df["predicted_weight"] = m * max_weight_df["workout_num"] + b
+predicted_weight, m, max_weight_df = calculate_weight_forecast(max_weight_df)
 
 pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
 most_recent_pr = pr_rows_df["date"].max()
@@ -150,12 +137,20 @@ fig1.update_layout(
     yaxis_title="Max Weight (lbs)"
 )
 
+next_date = latest_date + pd.Timedelta(days=7)
+
 if predicted_weight is not None:
     fig1.add_scatter(
         x = max_weight_df["date"],
         y = max_weight_df["predicted_weight"],
         mode = "lines",
         name = "Trendline"
+    )
+    fig1.add_scatter(
+        x = [next_date],
+        y = [predicted_weight],
+        mode = "markers",
+        name = "Prediction Point"
     )
 
 fig2 = px.bar(
