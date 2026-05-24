@@ -17,8 +17,7 @@ def calculate_weight_forecast(max_weight_df):
     m = numerator / denominator
     b = y_mean - m * x_mean
 
-    predicted_weight = m * len(max_weight_df)
-    predicted_weight += b
+    predicted_weight = m * len(max_weight_df) + b
 
     max_weight_df["predicted_weight"] = m * max_weight_df["workout_num"] + b
 
