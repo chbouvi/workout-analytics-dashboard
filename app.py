@@ -75,6 +75,10 @@ select_reps = st.sidebar.number_input(
     min_value=1
 )
 
+select_notes = st.sidebar.text_input(
+    "Notes: ",
+)
+
 if st.sidebar.button("Add Set"):
     if select_exercise == "":
         st.sidebar.error("Please enter an exercise")
@@ -84,10 +88,16 @@ if st.sidebar.button("Add Set"):
             "exercise": [select_exercise],
             "set": [select_set],
             "weight": [select_weight],
-            "reps": [select_reps]
+            "reps": [select_reps],
+            "notes": [select_notes]
         }
         new_df = pd.DataFrame(new_set)
+
         updated_df = pd.concat([df, new_df], ignore_index=True)
+
+        raw_columns = ["date", "exercise", "set", "weight", "reps", "notes"]
+        updated_df = updated_df[raw_columns]
+        
         updated_df.to_csv("workouts.csv", index=False)
         st.sidebar.success("Set added successfully")
         st.rerun()
