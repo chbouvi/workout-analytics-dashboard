@@ -61,14 +61,6 @@ date,exercise,set,weight,reps,notes
 2026-05-21,Cable Bicep Curl,2,35.0,12,
 2026-05-21,Cable Bicep Curl,3,35.0,11,
 
-2026-07-01,Regression Test 2,1,100.0,8,
-2026-07-08,Regression Test 2,1,100.0,8,
-2026-07-15,Regression Test 2,1,105.0,8,
-2026-07-22,Regression Test 2,1,105.0,8,
-2026-07-29,Regression Test 2,1,110.0,8,
-2026-08-05,Regression Test 2,1,110.0,8,
-2026-08-12,Regression Test 2,1,115.0,8,
-
 2026-05-24,Squat,1,85,10,Accidentally loaded 85 instead of intended 95
 2026-05-24,Squat,2,85,10,Accidentally loaded 85 instead of intended 95
 2026-05-24,Squat,3,85,10,Accidentally loaded 85 instead of intended 95
