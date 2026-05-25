@@ -54,6 +54,8 @@ if select_exercise == "Other...":
         "Enter Exercise Name: "
     )
 
+select_exercise = select_exercise.strip()
+
 select_set = st.sidebar.number_input(
     "Set: ",
     value=1,
@@ -97,7 +99,7 @@ if st.sidebar.button("Add Set"):
 
         raw_columns = ["date", "exercise", "set", "weight", "reps", "notes"]
         updated_df = updated_df[raw_columns]
-        
+
         updated_df.to_csv("workouts.csv", index=False)
         st.sidebar.success("Set added successfully")
         st.rerun()
@@ -111,8 +113,8 @@ latest_date = exercise_df["date"].max()
 sessions_df = exercise_df.groupby("date")["set"].max()
 total_sessions = len(sessions_df)
 
-volume_df = exercise_df.groupby("date")["volume"].sum()
-volume_df = volume_df.reset_index()
+volume = exercise_df.groupby("date")["volume"].sum()
+volume_df = volume.reset_index()
 highest_volume = int(volume_df["volume"].max())
 #highest_volume = volume_df.groupby("date")["volume"].sum().max()
 
@@ -147,7 +149,13 @@ fig1.update_layout(
     yaxis_title="Max Weight (lbs)"
 )
 
-next_date = latest_date + pd.Timedelta(days=7)
+workout_dates = max_weight_df["date"].sort_values()
+date_gaps = workout_dates.diff().dropna()
+if len(date_gaps) == 0:
+    usual_gap = pd.Timedelta(days=7)
+else:
+    usual_gap = date_gaps.median()
+next_date = latest_date + usual_gap
 
 if predicted_weight is not None:
     fig1.add_scatter(
