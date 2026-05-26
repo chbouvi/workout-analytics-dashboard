@@ -39,69 +39,78 @@ st.sidebar.divider()
 st.sidebar.header("Workout Form")
 
 select_date = st.sidebar.date_input(
-    "Date: "
-)
+        "Date: "
+    )
 
 select_date = pd.to_datetime(select_date)
 
 select_exercise = st.sidebar.selectbox(
-    "New Exercise ",
+    "Exercise ",
     exercises_list
 )
 
 if select_exercise == "Other...":
-    select_exercise = st.sidebar.text_input(
+    custom_exercise = st.sidebar.text_input(
         "Enter Exercise Name: "
     )
+    final_exercise = custom_exercise.strip()
 
-select_exercise = select_exercise.strip()
+else: 
+    final_exercise = select_exercise.strip()
 
-select_set = st.sidebar.number_input(
-    "Set: ",
+select_sets = st.sidebar.number_input(
+    "Number of Sets: ",
     value=1,
     step=1,
     min_value=1
 )
 
-select_weight = st.sidebar.number_input(
-    "Weight: ",
-    value=1,
-    step=1,
-    min_value=1
-)
+with st.sidebar.form("workout_form", clear_on_submit=True):
 
-select_reps = st.sidebar.number_input(
-    "Reps: ",
-    value=1,
-    step=1,
-    min_value=1
-)
+    set_rows = []
 
-select_notes = st.sidebar.text_input(
-    "Notes: ",
-)
+    for i in range(select_sets):
+        set_number = i + 1
+        select_weight = st.number_input(
+            f"Set {set_number} Weight: ",
+            value=1,
+            step=1,
+            min_value=1
+        )
 
-if st.sidebar.button("Add Set"):
-    if select_exercise == "":
-        st.sidebar.error("Please enter an exercise")
+        select_reps = st.number_input(
+            f"Set {set_number} Reps: ",
+            value=1,
+            step=1,
+            min_value=1
+        )
+
+        select_notes = st.text_input(
+            f"Set {set_number} Notes: ",
+        )
+        set_rows.append({
+            "date": select_date,
+            "exercise": final_exercise,
+            "set": set_number, 
+            "weight": select_weight, 
+            "reps": select_reps, 
+            "notes": select_notes
+        })
+    
+    submitted = st.form_submit_button("Add Exercise")
+
+if submitted:
+    if final_exercise == "":
+        st.error("Please enter an exercise")
     else:
-        new_set = {
-            "date": [select_date],
-            "exercise": [select_exercise],
-            "set": [select_set],
-            "weight": [select_weight],
-            "reps": [select_reps],
-            "notes": [select_notes]
-        }
-        new_df = pd.DataFrame(new_set)
-
+        new_df = pd.DataFrame(set_rows)
         updated_df = pd.concat([df, new_df], ignore_index=True)
 
         raw_columns = ["date", "exercise", "set", "weight", "reps", "notes"]
         updated_df = updated_df[raw_columns]
 
         updated_df.to_csv("workouts.csv", index=False)
-        st.sidebar.success("Set added successfully")
+        st.success("Exercise added successfully")
         st.rerun()
 
 exercise_df = df[df["exercise"] == exercise]
@@ -267,5 +276,18 @@ if st.button("Generate AI Insights"):
 
 st.divider()
 
+history_columns = [
+    "date",
+    "exercise",
+    "set",
+    "weight",
+    "reps",
+    "volume",
+    "estimated_1RM",
+    "notes"
+]
+
+history_df = exercise_df[history_columns]
+
 st.subheader("Workout History")
-st.dataframe(exercise_df)
+st.dataframe(history_df)
