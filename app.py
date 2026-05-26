@@ -133,6 +133,8 @@ max_weight = exercise_df.groupby("date")["weight"].max()
 max_weight_df = max_weight.reset_index()
 total_max_weight = int(max_weight_df["weight"].max())
 
+max_weight_df["moving_average"] = max_weight_df["weight"].rolling(window=3, min_periods=1).mean()
+
 predicted_weight, m, max_weight_df = calculate_weight_forecast(max_weight_df)
 
 pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
@@ -153,9 +155,20 @@ fig1 = px.line(
     markers=True
 )
 
+fig1.data[0].name = "Max Weight"
+fig1.data[0].showlegend = True
+
 fig1.update_layout(
     xaxis_title="Date",
     yaxis_title="Max Weight (lbs)"
+)
+
+fig1.add_scatter(
+    x = max_weight_df["date"],
+    y = max_weight_df["moving_average"],
+    mode = "lines",
+    name = "3-Workout Moving Average",
+    line=dict(dash="dot")
 )
 
 workout_dates = max_weight_df["date"].sort_values()
