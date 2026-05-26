@@ -115,6 +115,20 @@ if submitted:
 
 exercise_df = df[df["exercise"] == exercise]
 
+notes_by_date = []
+
+for date, rows in exercise_df.groupby("date"):
+    notes = rows["notes"].dropna()
+    notes = notes[notes != ""]
+
+    if len(notes) > 0:
+        notes_text = "; ".join(notes)
+        notes_by_date.append(f"{date}: {notes_text}")
+
+notes_summary = "\n".join(notes_by_date)
+if notes_summary == "":
+    notes_summary = "No notes recorded."
+
 latest_workout = exercise_df["date"].max().strftime("%m/%d/%y")
 latest_date = exercise_df["date"].max()
 
@@ -272,6 +286,7 @@ insight_prompt = f"""
     Highest Volume: {highest_volume}
     Most Recent PR Date: {most_recent_pr}
     Regression Slope: {m}
+    Workout Notes: {notes_summary}
 
     Give:
     1. Progress assessment
