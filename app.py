@@ -3,6 +3,7 @@ import streamlit as st
 import plotly.express as px 
 from google import genai
 from forecasting import calculate_weight_forecast
+import metrics as mt
 
 # Load workout data
 df = pd.read_csv("workouts.csv")
@@ -129,37 +130,38 @@ notes_summary = "\n".join(notes_by_date)
 if notes_summary == "":
     notes_summary = "No notes recorded."
 
-latest_workout = exercise_df["date"].max().strftime("%m/%d/%y")
-latest_date = exercise_df["date"].max()
+latest_workout = mt.calculate_latest_workout(exercise_df)
+latest_date = mt.calculate_latest_date(exercise_df)
 
 # Calculate total sessions for this exercise
-sessions_df = exercise_df.groupby("date")["set"].max()
-total_sessions = len(sessions_df)
+total_sessions = mt.calculate_total_sessions(exercise_df)
 
-volume = exercise_df.groupby("date")["volume"].sum()
-volume_df = volume.reset_index()
-highest_volume = int(volume_df["volume"].max())
-#highest_volume = volume_df.groupby("date")["volume"].sum().max()
-
-#st.write(volume_df)
+# Calculate highest volume for this exercise
+highest_volume = mt.calculate_highest_volume(exercise_df)
 
 max_weight = exercise_df.groupby("date")["weight"].max()
 max_weight_df = max_weight.reset_index()
-total_max_weight = int(max_weight_df["weight"].max())
+
+volume = exercise_df.groupby("date")["volume"].sum()
+volume_df = volume.reset_index()
+
+max_1rm = exercise_df.groupby("date")["estimated_1RM"].max()
+max_1rm_df = max_1rm.reset_index()
+
+# Calculate max 1RM
+total_max_1rm = mt.calculate_max_estimated_1rm(exercise_df)
+
+total_max_weight = mt.calculate_max_weight(exercise_df)
 
 max_weight_df["moving_average"] = max_weight_df["weight"].rolling(window=3, min_periods=1).mean()
 
 predicted_weight, m, max_weight_df = calculate_weight_forecast(max_weight_df)
 
-pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
-most_recent_pr = pr_rows_df["date"].max()
-most_recent_pr = most_recent_pr.strftime("%m/%d/%y")
+# Calculate most recent PR
+most_recent_pr = mt.calculate_most_recent_pr(max_weight_df, total_max_weight)
 
-max_1RM = exercise_df.groupby("date")["estimated_1RM"].max()
-max_1RM_df = max_1RM.reset_index()
-total_max_1RM = int(max_1RM_df["estimated_1RM"].max())
 
-# Create graph
+# Create charts
 
 fig1 = px.line(
     max_weight_df,
@@ -220,7 +222,7 @@ fig2.update_layout(
 )
 
 fig3 = px.line(
-    max_1RM_df,
+    max_1rm_df,
     x="date",
     y="estimated_1RM",
     title="1RM Progress",
@@ -251,7 +253,7 @@ with col4:
     st.metric("Highest Volume", highest_volume)
 
 with col5:
-    st.metric("Estimated 1RM", total_max_1RM)
+    st.metric("Estimated 1RM", total_max_1rm)
 
 with col6:
     st.metric("Latest Workout", latest_workout)
@@ -280,7 +282,7 @@ insight_prompt = f"""
     Exercise: {exercise}
     Sessions: {total_sessions}
     Max Weight: {total_max_weight}
-    Estimated 1RM: {total_max_1RM}
+    Estimated 1RM: {total_max_1rm}
     Predicted Next Weight: {predicted_weight}
     Latest Workout: {latest_workout}
     Highest Volume: {highest_volume}
