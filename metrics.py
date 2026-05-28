@@ -1,5 +1,5 @@
 def calculate_latest_workout(exercise_df):
-    return exercise_df["date"].max().strftime("%m/%d/%y")
+    return exercise_df["date"].max().strftime("%m/%d/%Y")
 
 def calculate_latest_date(exercise_df):
     return exercise_df["date"].max()
@@ -20,7 +20,7 @@ def calculate_max_weight(exercise_df):
 
 def calculate_most_recent_pr(max_weight_df, total_max_weight):
     pr_rows_df = max_weight_df[max_weight_df["weight"] == total_max_weight]
-    return pr_rows_df["date"].max().strftime("%m/%d/%y")
+    return pr_rows_df["date"].max().strftime("%m/%d/%Y")
 
 def calculate_max_estimated_1rm(exercise_df):
     max_1rm = exercise_df.groupby("date")["estimated_1RM"].max()
