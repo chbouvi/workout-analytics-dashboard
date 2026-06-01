@@ -305,7 +305,7 @@ if st.button("Generate AI Insights"):
         )
         st.markdown(response.text)
     except Exception as e:
-        st.error("AI Insights are temporarily unavailable. Please try again later.")
+        st.error("AI insights are temporarily unavailable. Please try again later.")
 
 st.divider()
 
