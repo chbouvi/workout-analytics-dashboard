@@ -30,9 +30,6 @@ A Streamlit-based dashboard for logging workouts, analyzing exercise-specific pr
 ### Progress Charts
 ![Progress Charts](screenshots/progress-charts.png)
 
-### Workout Entry
-![Workout Entry](screenshots/workout-entry.png)
-
 ## Testing
 
 The forecasting code is separated into `forecasting.py` and tested with `pytest`.
