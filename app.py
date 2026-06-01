@@ -31,13 +31,13 @@ st.title("Workout Progress Dashboard", anchor=False)
 st.sidebar.header("Exercise Filter")
 
 exercise = st.sidebar.selectbox(
-    "Choose Exercise",
+    "Select Exercise",
     df["exercise"].unique()
 )
 
 st.sidebar.divider()
 
-st.sidebar.header("Workout Form")
+st.sidebar.header("Log Workout")
 
 select_date = st.sidebar.date_input(
         "Date: "
@@ -298,11 +298,14 @@ insight_prompt = f"""
 """
 
 if st.button("Generate AI Insights"):
-    response = client.models.generate_content(
-        model="gemini-3.5-flash",
-        contents=insight_prompt
-    )
-    st.markdown(response.text)
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=insight_prompt
+        )
+        st.markdown(response.text)
+    except Exception as e:
+        st.error("AI Insights are temporarily unavailable. Please try again later.")
 
 st.divider()
 
