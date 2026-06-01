@@ -22,6 +22,17 @@ A Streamlit-based dashboard for logging workouts, analyzing exercise-specific pr
 - The prediction point is placed using the median gap between workout dates for the selected exercise instead of assuming a fixed interval.
 - If there are fewer than two workouts for an exercise, the prediction will display `N/A`.
 
+## Screenshots
+
+### Performance Metrics
+![Performance Metrics](screenshots/performance-metrics.png)
+
+### Progress Charts
+![Progress Charts](screenshots/progress-charts.png)
+
+### Workout Entry
+![Workout Entry](screenshots/workout-entry.png)
+
 ## Testing
 
 The forecasting code is separated into `forecasting.py` and tested with `pytest`.
