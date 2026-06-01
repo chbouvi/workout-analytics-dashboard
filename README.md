@@ -32,7 +32,7 @@ A Streamlit-based dashboard for logging workouts, analyzing exercise-specific pr
 
 ## Testing
 
-The forecasting code is separated into `forecasting.py` and tested with `pytest`.
+The forecasting and metrics logic are separated into `forecasting.py` and `metrics.py` and tested with `pytest`.
 
 Run tests:
 
@@ -56,8 +56,17 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
 Run the app:
 
 ```bash
 streamlit run app.py
+```
+
+## AI Setup
+
+To use AI insights locally, add your Gemini API key to `.streamlit/secrets.toml`:
+
+```toml
+Gemini_Key = "your-api-key-here"
 ```
