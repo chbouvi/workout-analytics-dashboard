@@ -8,9 +8,11 @@ import metrics as mt
 # Load workout data
 df = pd.read_csv("workouts.csv")
 
-exercises_array = df["exercise"].unique()
-exercises_list = exercises_array.tolist()
-exercises_list.append("Other...")
+if df.empty:
+    exercises_list = ["Other..."]
+else:
+    exercises_list = df["exercise"].unique().tolist()
+    exercises_list.append("Other...")
 
 # Cleaner date
 df["date"] = pd.to_datetime(df["date"])
@@ -25,17 +27,6 @@ st.title("Workout Progress Dashboard", anchor=False)
 
 # Show data
 #st.write(df)
-
-#Filter exercise
-
-st.sidebar.header("Exercise Filter")
-
-exercise = st.sidebar.selectbox(
-    "Select Exercise",
-    df["exercise"].unique()
-)
-
-st.sidebar.divider()
 
 st.sidebar.header("Log Workout")
 
@@ -113,6 +104,18 @@ if submitted:
         updated_df.to_csv("workouts.csv", index=False)
         st.success("Exercise added successfully")
         st.rerun()
+
+if df.empty:
+    st.info("No workouts logged yet. Add your first workout from the sidebar.")
+    st.stop()
+
+st.sidebar.divider()
+st.sidebar.header("Exercise Filter")
+
+exercise = st.sidebar.selectbox(
+    "Select Exercise",
+    df["exercise"].unique()
+)
 
 exercise_df = df[df["exercise"] == exercise]
 
